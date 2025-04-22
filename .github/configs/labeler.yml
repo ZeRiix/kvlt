@@ -1,0 +1,14 @@
+github:
+  - ".github/**/*"
+
+wip:
+  - "**/*"
+  
+docs:
+  - "*.md"
+  - "**/*.md"
+
+docker:
+  - ".docker/**/*"
+  - "compose.yml"
+  - "compose.prod.yml"
