@@ -22,13 +22,21 @@ func getValueRoute(router *mux.Router) {
 		value, exists := s.GetValue(requestRouteParams.Key)
 
 		if !exists {
-			utils.ErrorResponse(w, http.StatusNotFound, "Key not found")
+			utils.MakeResponse(w, utils.Response{
+				Status: http.StatusNotFound,
+				Error:  "Key not found",
+				Info:   "error.keyNotFound",
+			})
 			return
 		}
 
-		utils.JSONResponse(w, http.StatusOK, map[string]interface{}{
-			"key":   requestRouteParams.Key,
-			"value": value,
+		utils.MakeResponse(w, utils.Response{
+			Status: http.StatusOK,
+			Data: map[string]interface{}{
+				"key":   requestRouteParams.Key,
+				"value": value,
+			},
+			Info: "success.keyFound",
 		})
 	}).Methods("GET")
 }

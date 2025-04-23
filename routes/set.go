@@ -20,16 +20,24 @@ func setValueRoute(router *mux.Router) {
 		}
 
 		if requestBody.Key == "" {
-			utils.ErrorResponse(w, http.StatusBadRequest, "Missing 'key' in request body")
+			utils.MakeResponse(w, utils.Response{
+				Status: http.StatusBadRequest,
+				Error:  "Key is required",
+				Info:   "error.keyRequired",
+			})
 			return
 		}
 
 		s := store.Get()
 		s.SetValue(requestBody.Key, requestBody.Value)
 
-		utils.JSONResponse(w, http.StatusCreated, map[string]interface{}{
-			"key":   requestBody.Key,
-			"value": requestBody.Value,
+		utils.MakeResponse(w, utils.Response{
+			Status: http.StatusOK,
+			Data: map[string]interface{}{
+				"key":   requestBody.Key,
+				"value": requestBody.Value,
+			},
+			Info: "success.keySet",
 		})
 	}).Methods("POST")
 }
