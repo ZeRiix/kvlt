@@ -12,56 +12,18 @@ import (
 )
 
 func main() {
+	// Load Environment Variables
 	envs.LoadEnv()
 
 	envs := envs.Gets()
 
-	initializeStore(envs.SnapshotFileName)
+	// Init Store
+	store := store.Get()
+	store.EnableAutoPersistence(envs.DbPath)
 
-	setupCronSnapshot(envs.SnapshotTime)
+	jobDropExpiredKeys(store, envs.CleanerTime)
 
 	startServer(envs.Host, envs.Port)
-}
-
-func initializeStore(snapshotName string) {
-	store.Get()
-
-	var snapshotToLoad string
-	var err error
-
-	if snapshotName != "" {
-		snapshotToLoad = snapshotName
-		log.Printf("Utilisation du snapshot spécifié: %s", snapshotName)
-	} else {
-		snapshotToLoad, err = store.GetLatestSnapshot()
-		if err != nil {
-			log.Fatalf("Erreur lors de la récupération du dernier snapshot: %v", err)
-		}
-	}
-
-	if snapshotToLoad != "" {
-		if err := store.LoadSnapshot(snapshotToLoad); err != nil {
-			log.Fatalf("Erreur lors du chargement du snapshot %s: %v", snapshotToLoad, err)
-		}
-		log.Printf("Snapshot chargé: %s", snapshotToLoad)
-	} else {
-		log.Println("Aucun snapshot trouvé ou spécifié.")
-	}
-
-	log.Println("Store initialisé.")
-}
-
-func setupCronSnapshot(time string) {
-	crontab := cron.New()
-	_, err := crontab.AddFunc(time, func() {
-		if err := store.MakeSnapshot(); err != nil {
-			log.Printf("Erreur lors de la création du snapshot: %v", err)
-		}
-	})
-	if err != nil {
-		log.Fatalf("Erreur lors de la configuration du cron job: %v", err)
-	}
-	crontab.Start()
 }
 
 func startServer(host string, port int) {
@@ -73,6 +35,19 @@ func startServer(host string, port int) {
 		Handler: router,
 	}
 
-	log.Printf("Serveur démarré sur http://%s", addr)
+	log.Printf("Server start on: http://%s", addr)
 	log.Fatal(server.ListenAndServe())
+}
+
+func jobDropExpiredKeys(store *store.Store, time string) {
+	crontab := cron.New()
+	_, err := crontab.AddFunc(time, func() {
+		if err := store.CleanExpiredKeys(); err != nil {
+			log.Printf("Error cleaning expired keys: %v", err)
+		}
+	})
+	if err != nil {
+		log.Fatalf("Error scheduling cron job (jobDropExpiredKeys): %v", err)
+	}
+	crontab.Start()
 }

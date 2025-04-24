@@ -11,8 +11,9 @@ import (
 func setValueRoute(router *mux.Router) {
 	router.HandleFunc("/value", func(w http.ResponseWriter, r *http.Request) {
 		var requestBody struct {
-			Key   string      `json:"key"`
-			Value interface{} `json:"value"`
+			Key      string      `json:"key"`
+			Value    interface{} `json:"value"`
+			Duration int64       `json:"duration"`
 		}
 
 		if !utils.ValidateRequestBody(w, r, &requestBody) {
@@ -29,15 +30,11 @@ func setValueRoute(router *mux.Router) {
 		}
 
 		s := store.Get()
-		s.SetValue(requestBody.Key, requestBody.Value)
+		s.SetValue(requestBody.Key, requestBody.Value, requestBody.Duration)
 
 		utils.MakeResponse(w, utils.Response{
 			Status: http.StatusOK,
-			Data: map[string]interface{}{
-				"key":   requestBody.Key,
-				"value": requestBody.Value,
-			},
-			Info: "success.keySet",
+			Info:   "success.keySet",
 		})
-	}).Methods("POST")
+	}).Methods("PUT")
 }

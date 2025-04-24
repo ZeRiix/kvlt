@@ -2,34 +2,87 @@ package store
 
 import (
 	"sync"
+	"time"
 )
 
+type Item struct {
+	value interface{}
+	iat   int64 // Issued At Time
+	exp   int64 // Expiration Time
+}
+
 type Store struct {
-	data map[string]interface{}
-	mu   sync.RWMutex
+	data     map[string]Item
+	mu       sync.RWMutex
+	SetValue func(key string, value interface{}, duration int64)
+	DropKey  func(key string) bool
 }
 
 var instance *Store
 var once sync.Once
 
+// Get returns the singleton instance of Store.
 func Get() *Store {
 	once.Do(func() {
-		instance = &Store{
-			data: make(map[string]interface{}),
+		s := &Store{
+			data: make(map[string]Item),
 		}
+
+		// SetValue is a method to set a value in the store with an expiration duration.
+		s.SetValue = func(key string, value interface{}, duration int64) {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			now := time.Now().Unix()
+			exp := now + duration
+			item := Item{
+				value: value,
+				iat:   now,
+				exp:   exp,
+			}
+
+			s.data[key] = item
+		}
+
+		s.DropKey = func(key string) bool {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			_, exists := s.data[key]
+			if exists {
+				delete(s.data, key)
+				return true
+			}
+			return false
+		}
+
+		instance = s
 	})
 	return instance
 }
 
-func (s *Store) SetValue(key string, value interface{}) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.data[key] = value
-}
-
-func (s *Store) GetValue(key string) (interface{}, bool) {
+// GetItem retrieves the Item associated with the key.
+func (s *Store) GetItem(key string) (Item, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	val, ok := s.data[key]
-	return val, ok
+	item, ok := s.data[key]
+	if !ok {
+		return Item{}, false
+	}
+
+	if item.exp > 0 && time.Now().Unix() > item.exp {
+		return Item{}, false
+	}
+
+	return item, true
+}
+
+// GetValue retrieves the value associated with the key.
+func (s *Store) GetValue(key string) (interface{}, bool) {
+	item, ok := s.GetItem(key)
+	if !ok {
+		return nil, false
+	}
+
+	return item.value, true
 }
