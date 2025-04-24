@@ -9,16 +9,15 @@ import (
 )
 
 type Envs struct {
-	Port             int    `env:"PORT,required"`
-	Host             string `env:"HOST,required"`
-	SnapshotTime     string `env:"SNAPSHOT_TIME,required"`
-	SnapshotFileName string `env:"SNAPSHOT_FILENAME"`
+	Port   int    `env:"PORT,required"`
+	Host   string `env:"HOST,required"`
+	DbPath string `env:"DB_PATH" envDefault:"./db/store.json"`
 }
 
 func LoadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Printf("Erreur lors du chargement du fichier .env: %v\n", err)
+		fmt.Printf("Error loading .env file: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -27,7 +26,7 @@ func Gets() Envs {
 	var envs Envs
 
 	if err := env.Parse(&envs); err != nil {
-		fmt.Printf("Erreur lors du parsing des variables d'environnement: %v\n", err)
+		fmt.Printf("Error parsing env variables: %v\n", err)
 		os.Exit(1)
 	}
 

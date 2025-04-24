@@ -7,13 +7,14 @@ import (
 
 type Item struct {
 	value interface{}
-	iat   int64 // Issued At Time (timestamp de création)
-	exp   int64 // Expiration Time (timestamp d'expiration)
+	iat   int64 // Issued At Time
+	exp   int64 // Expiration Time
 }
 
 type Store struct {
-	data map[string]Item
-	mu   sync.RWMutex
+	data     map[string]Item
+	mu       sync.RWMutex
+	SetValue func(key string, value interface{}, duration int64)
 }
 
 var instance *Store
@@ -22,27 +23,29 @@ var once sync.Once
 // Get returns the singleton instance of Store.
 func Get() *Store {
 	once.Do(func() {
-		instance = &Store{
+		s := &Store{
 			data: make(map[string]Item),
 		}
+
+		// SetValue is a method to set a value in the store with an expiration duration.
+		s.SetValue = func(key string, value interface{}, duration int64) {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			now := time.Now().Unix()
+			exp := now + duration
+			item := Item{
+				value: value,
+				iat:   now,
+				exp:   exp,
+			}
+
+			s.data[key] = item
+		}
+
+		instance = s
 	})
 	return instance
-}
-
-// SetValue sets the value associated with the key and an expiration duration.
-func (s *Store) SetValue(key string, value interface{}, duration int64) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	now := time.Now().Unix()
-	exp := now + duration
-	item := Item{
-		value: value,
-		iat:   now,
-		exp:   exp,
-	}
-
-	s.data[key] = item
 }
 
 // GetItem retrieves the Item associated with the key.
