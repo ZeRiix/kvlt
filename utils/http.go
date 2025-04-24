@@ -17,7 +17,6 @@ type Response struct {
 // HTTP utility functions for handling JSON responses, request body parsing, and query parameter parsing.
 func MakeResponse(w http.ResponseWriter, response Response) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.Status)
 
 	responseMap := make(map[string]interface{})
 
@@ -33,7 +32,12 @@ func MakeResponse(w http.ResponseWriter, response Response) {
 		responseMap["error"] = response.Error
 	}
 
-	json.NewEncoder(w).Encode(responseMap)
+	// warning: must be placed at the end because it closes the header construction
+	w.WriteHeader(response.Status)
+
+	if len(responseMap) > 0 {
+		json.NewEncoder(w).Encode(responseMap)
+	}
 }
 
 // ParseJSONBody parses the JSON body of an HTTP request into the provided struct.

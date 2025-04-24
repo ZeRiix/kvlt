@@ -36,5 +36,5 @@ func setValueRoute(router *mux.Router) {
 			Status: http.StatusOK,
 			Info:   "success.keySet",
 		})
-	}).Methods("POST")
+	}).Methods("PUT")
 }
