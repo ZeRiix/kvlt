@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 type storedItem struct {
@@ -63,15 +62,10 @@ func (s *Store) LoadFromFile(filePath string) error {
 		return err
 	}
 
-	now := time.Now().Unix()
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	for key, item := range storedData.Data {
-		if item.Exp > 0 && now > item.Exp {
-			continue
-		}
-
 		s.data[key] = Item{
 			value: item.Value,
 			iat:   item.Iat,
@@ -94,5 +88,18 @@ func (s *Store) EnableAutoPersistence(filePath string) {
 				log.Printf("error saving to file: %v", err)
 			}
 		}()
+	}
+
+	originalDelete := s.DropKey
+	s.DropKey = func(key string) bool {
+		result := originalDelete(key)
+		if result {
+			go func() {
+				if err := s.SaveToFile(filePath); err != nil {
+					log.Printf("error saving to file after deletion: %v", err)
+				}
+			}()
+		}
+		return result
 	}
 }

@@ -15,6 +15,7 @@ type Store struct {
 	data     map[string]Item
 	mu       sync.RWMutex
 	SetValue func(key string, value interface{}, duration int64)
+	DropKey  func(key string) bool
 }
 
 var instance *Store
@@ -41,6 +42,18 @@ func Get() *Store {
 			}
 
 			s.data[key] = item
+		}
+
+		s.DropKey = func(key string) bool {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			_, exists := s.data[key]
+			if exists {
+				delete(s.data, key)
+				return true
+			}
+			return false
 		}
 
 		instance = s

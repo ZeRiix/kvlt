@@ -9,9 +9,10 @@ import (
 )
 
 type Envs struct {
-	Port   int    `env:"PORT,required"`
-	Host   string `env:"HOST,required"`
-	DbPath string `env:"DB_PATH" envDefault:"./db/store.json"`
+	Port        int    `env:"PORT,required"`
+	Host        string `env:"HOST,required"`
+	DbPath      string `env:"DB_PATH" envDefault:"./db/store.json"`
+	CleanerTime string `env:"CLEANER_TIME" envDefault:"@every 5s"`
 }
 
 func LoadEnv() {
