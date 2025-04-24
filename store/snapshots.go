@@ -83,7 +83,7 @@ func LoadSnapshot(filename string) error {
 
 	if instance == nil {
 		instance = &Store{
-			data: make(map[string]interface{}),
+			data: make(map[string]Item),
 			mu:   sync.RWMutex{},
 		}
 	}
@@ -91,9 +91,13 @@ func LoadSnapshot(filename string) error {
 	instance.mu.Lock()
 	defer instance.mu.Unlock()
 
-	instance.data = make(map[string]interface{})
+	instance.data = make(map[string]Item)
 	for key, value := range snapshotData.Data {
-		instance.data[key] = value
+		if item, ok := value.(Item); ok {
+			instance.data[key] = item
+		} else {
+			log.Printf("Attention: Impossible d'indexe la value pour la key '%s' en type Item", key)
+		}
 	}
 
 	log.Printf("Snapshot '%s' chargé avec succès (%d entrées, timestamp: %s)",
