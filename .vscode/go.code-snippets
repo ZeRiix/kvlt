@@ -1,0 +1,18 @@
+{
+    "fmt Println": {
+        "prefix": "fmt",
+        "body": [
+            "fmt.Println(\"$1\")"
+        ],
+        "description": "Shortcut for fmt.Println"
+    },
+    "Go test function": {
+        "prefix": "testfunc",
+        "body": [
+            "func Test$1(t *testing.T) {",
+            "  $0",
+            "}"
+        ],
+        "description": "Basic Go test function"
+    }
+}

@@ -26,7 +26,6 @@
 1. **Fonctionnalités principales :**
    - Stockage de paires clé-valeur en mémoire.
    - Récupération de valeurs par clé.
-   - Suppression de paires clé-valeur.
    - Interface HTTP pour interagir avec le cache.
 
 2. **Architecture :**
@@ -44,16 +43,11 @@
 
 5. **Configuration :**
    - Permettre la configuration de l'application via un fichier de configuration.
-   - Supporter des options de configuration pour le port du serveur et d'autres paramètres.
-
-6. **Protocoles :**
-   - Implémenter le protocole RESP (REdis Serialization Protocol) pour la communication entre le client et le serveur.
 
 ## Prérequis
 
 - Go
 - Docker
-- Gorilla
 
 ## :warning: Attention
 
