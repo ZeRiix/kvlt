@@ -11,44 +11,63 @@
   <a href="#">
     <img src="https://img.shields.io/badge/coverage-0%25-red?style=plastic" alt="lang">
   </a>
+  <a href="https://hub.docker.com/r/z4riix/kvlt">
+    <img src="https://img.shields.io/docker/pulls/z4riix/kvlt?style=plastic&logo=docker" alt="Docker Hub">
+  </a>
 </p>
 
-## Introduction
+## Présentation
 
-**Kvlt** est un projet de mini base de données en mémoire inspiré de Redis, conçu pour offrir des fonctionnalités de **stockage clé-valeur simples et efficaces**. Ce projet a pour but de fournir une compréhension approfondie des concepts fondamentaux de la gestion de cache et des protocoles de communication entre un client et un serveur.
+**KVLT** est une base de données clé-valeur en mémoire inspirée de Redis, conçue pour offrir un stockage de données simple, rapide et performant. Elle propose une solution légère pour les applications nécessitant un accès rapide aux données sans la complexité des systèmes de base de données traditionnels.
 
-## Utilité
+## Caractéristiques principales
 
-**Kvlt** permet aux développeurs de stocker et de récupérer des données rapidement grâce à une **interface HTTP simple**. Il est idéal pour les applications nécessitant un accès rapide aux données, comme les sessions utilisateur, les résultats de requêtes fréquentes ou tout autre type de données temporaires. En utilisant ce mini Redis, les utilisateurs peuvent expérimenter avec les principes de base de la gestion de cache et du développement de services web.
+- **Stockage en mémoire** : Accès ultra-rapide aux données
+- **Architecture simple** : API REST intuitive et facile à utiliser
+- **Flexibilité** : Stockage de différents types de données (chaînes, nombres, objets JSON)
+- **Développé en Go** : Performances optimales et faible empreinte mémoire
+- **Conteneurisé** : Déploiement facile via Docker
 
-## Cahier des charges
+## Cas d'utilisation
 
-1. **Fonctionnalités principales :**
-   - Stockage de paires clé-valeur en mémoire.
-   - Récupération de valeurs par clé.
-   - Interface HTTP pour interagir avec le cache.
+**KVLT** est particulièrement adapté pour :
 
-2. **Architecture :**
-   - Utilisation de Go comme langage de programmation principal.
-   - Mise en place d'un serveur HTTP pour gérer les requêtes.
-   - Conteneuriser l'application avec Docker pour faciliter le déploiement et la portabilité.
+- Cache d'application
+- Gestion des sessions utilisateurs
+- Stockage temporaire de résultats de requêtes fréquentes
+- Partage de données entre différents services
+- Environnements d'apprentissage et de test
 
-3. **Documentation :**
-   - Fournir une documentation claire sur l'utilisation de l'API.
-   - Expliquer les commandes disponibles et leur fonctionnement.
+## Installation
 
-4. **Tests (optionnel) :**
-   - Écrire des tests unitaires pour les fonctionnalités critiques.
-   - Assurer la couverture du code pour garantir la fiabilité de l'application.
+```bash
+docker run -d -v kvlt-data:/root/data -p 8080:8080 ---name kvlt z4riix/kvlt
+```
 
-5. **Configuration :**
-   - Permettre la configuration de l'application via un fichier de configuration.
+### Compose configuration
 
-## Prérequis
+```yaml
+services:
+  kvlt:
+    image: z4riix/kvlt
+    container_name: kvlt
+    ports:
+      - "8080:8080"
+    environment:
+      - CLEANER_TIME="@every 3s" # default 3s
+    volumes:
+      - kvlt-data:/root/data
+volumes:
+  kvlt-data:
+    driver: local
+```
 
-- Go
-- Docker
+## Ressources
 
-## :warning: Attention
+- [Documentation du client KVLT](./client/README.md)
+- [Documentation technique KVLT](./docs/README.md)
+- [Cahier des charges](./docs/specifications.md)
 
-**Ce projet est créer dans le cadre d'un cours de développement et n'est pas destiné à être utilisé en production.** Je vous remercirai de ne pas l'utiliser ni de prendre exemple sur ce projet pour vos propres projets.
+## :warning: Avertissement
+
+**Ce projet est créé dans le cadre d'un cours de développement et n'est pas destiné à être utilisé en production**. Merci de ne pas l'utiliser ni de prendre exemple sur ce projet pour vos propres projets.
