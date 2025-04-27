@@ -11,13 +11,11 @@ KVLT est une base de données clé-valeur en mémoire conçue pour offrir un sto
 
 2. **Architecture :**
    - [x] Utilisation de Go comme langage de programmation principal.
-   - [ ] Mise en place d'un serveur HTTP pour gérer les requêtes.
-   - [ ] Conteneuriser l'application avec Docker pour faciliter le déploiement et la portabilité.
+   - [x] Mise en place d'un serveur HTTP pour gérer les requêtes.
+   - [x] Conteneuriser l'application avec Docker pour faciliter le déploiement et la portabilité.
 
 3. **Documentation :**
-   - [ ] Fournir une documentation claire sur l'utilisation de l'API.
-   - [ ] Fournir une documentation sur l'architecture du projet.
-   - [ ] Fournir une documentation sur l'utilisation de l'application.
+   - [x] Fournir une documentation claire sur l'utilisation de l'API.
 
 4. **Tests :**
    - [ ] Écrire des tests unitaires pour les fonctionnalités critiques.

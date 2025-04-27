@@ -65,7 +65,7 @@ volumes:
 ## Ressources
 
 - [Documentation du client KVLT](./client/README.md)
-- [Documentation technique KVLT](./docs/README.md)
+- [Documentation KVLT](./docs/README.md)
 - [Cahier des charges](./docs/specifications.md)
 
 ## :warning: Avertissement
