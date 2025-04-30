@@ -3,16 +3,19 @@ package envs
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
 )
 
 type Envs struct {
-	Port        int    `env:"PORT,required"`
-	Host        string `env:"HOST,required"`
-	DbPath      string `env:"DB_PATH" envDefault:"./data/store.json"`
-	CleanerTime string `env:"CLEANER_TIME" envDefault:"@every 5s"`
+	IntervalAnalyzeBuffer time.Duration `env:"INTERVAL_ANALYZE_BUFFER,required"`
+	IntervalSnapshot      time.Duration `env:"INTERVAL_SNAPSHOT,required"`
+	IntervalCleaner       time.Duration `env:"INTERVAL_CLEANER,required"`
+	QuantityBuffer        int           `env:"QUANTITY_BUFFER,required"`
+	AofFolderPath         string        `env:"AOF_FOLDER_PATH,required"`
+	SnapshotFolderPath    string        `env:"SNAPSHOT_FOLDER_PATH,required"`
 }
 
 func LoadEnv() {

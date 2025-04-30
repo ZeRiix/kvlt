@@ -1,53 +1,50 @@
 package main
 
 import (
-	"fmt"
-	"kvlt/envs"
-	"kvlt/routes"
 	"kvlt/store"
-	"log"
-	"net/http"
-
-	"github.com/robfig/cron/v3"
+	"time"
 )
 
 func main() {
-	// Load Environment Variables
-	envs.LoadEnv()
 
-	envs := envs.Gets()
+	storeInstance := store.NewStore()
 
-	// Init Store
-	store := store.Get()
-	store.EnableAutoPersistence(envs.DbPath)
+	store.LoadSnapshot(storeInstance, "./data")
 
-	jobDropExpiredKeys(store, envs.CleanerTime)
+	store.StartCleaner(storeInstance, 15*time.Second)
 
-	startServer(envs.Host, envs.Port)
-}
-
-func startServer(host string, port int) {
-	addr := fmt.Sprintf("%s:%d", host, port)
-	router := routes.SetupRouter()
-
-	server := &http.Server{
-		Addr:    addr,
-		Handler: router,
+	options := store.OptionAOF{
+		IntervalAnalyzeBuffer: 1 * time.Second,
+		IntervalSnapshot:      10 * time.Second,
+		QuantityBuffer:        10,
+		AofFolderPath:         "./buffer",
+		SnapshotFolderPath:    "./data",
 	}
 
-	log.Printf("Server start on: http://%s", addr)
-	log.Fatal(server.ListenAndServe())
-}
+	store.InitAOF(storeInstance, options)
 
-func jobDropExpiredKeys(store *store.Store, time string) {
-	crontab := cron.New()
-	_, err := crontab.AddFunc(time, func() {
-		if err := store.CleanExpiredKeys(); err != nil {
-			log.Printf("Error cleaning expired keys: %v", err)
-		}
+	storeInstance.Set(store.Item{
+		Key: "test",
+		Value: map[string]interface{}{
+			"firstname": "john",
+			"lastname":  "doe",
+		},
+		Exp: time.Now().Unix() + 20,
 	})
-	if err != nil {
-		log.Fatalf("Error scheduling cron job (jobDropExpiredKeys): %v", err)
-	}
-	crontab.Start()
+
+	storeInstance.Set(store.Item{
+		Key:   "test1",
+		Value: 1000,
+		Exp:   time.Now().Unix() + 1000,
+	})
+
+	storeInstance.Set(store.Item{
+		Key:   "test2",
+		Value: "test",
+		Exp:   time.Now().Unix() + 1000,
+	})
+
+	storeInstance.Drop("test1")
+
+	select {}
 }

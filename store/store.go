@@ -1,88 +1,64 @@
 package store
 
-import (
-	"sync"
-	"time"
-)
-
 type Item struct {
-	value interface{}
-	iat   int64 // Issued At Time
-	exp   int64 // Expiration Time
+	Value interface{}
+	Key   string
+	Exp   int64
+}
+
+type ActionHooks struct {
+	get  []func(item Item)
+	set  []func(item Item)
+	drop []func(item Item)
 }
 
 type Store struct {
-	data     map[string]Item
-	mu       sync.RWMutex
-	SetValue func(key string, value interface{}, duration int64)
-	DropKey  func(key string) bool
+	data        map[string]Item
+	actionHooks ActionHooks
 }
 
-var instance *Store
-var once sync.Once
-
-// Get returns the singleton instance of Store.
-func Get() *Store {
-	once.Do(func() {
-		s := &Store{
-			data: make(map[string]Item),
-		}
-
-		// SetValue is a method to set a value in the store with an expiration duration.
-		s.SetValue = func(key string, value interface{}, duration int64) {
-			s.mu.Lock()
-			defer s.mu.Unlock()
-
-			now := time.Now().Unix()
-			exp := now + duration
-			item := Item{
-				value: value,
-				iat:   now,
-				exp:   exp,
-			}
-
-			s.data[key] = item
-		}
-
-		s.DropKey = func(key string) bool {
-			s.mu.Lock()
-			defer s.mu.Unlock()
-
-			_, exists := s.data[key]
-			if exists {
-				delete(s.data, key)
-				return true
-			}
-			return false
-		}
-
-		instance = s
-	})
-	return instance
+func NewStore() *Store {
+	return &Store{
+		data: make(map[string]Item),
+		actionHooks: ActionHooks{
+			get:  []func(item Item){},
+			set:  []func(item Item){},
+			drop: []func(item Item){},
+		},
+	}
 }
 
-// GetItem retrieves the Item associated with the key.
-func (s *Store) GetItem(key string) (Item, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	item, ok := s.data[key]
-	if !ok {
-		return Item{}, false
+func launchHook(item Item, hooks []func(item Item)) {
+	for _, hook := range hooks {
+		go hook(item)
 	}
-
-	if item.exp > 0 && time.Now().Unix() > item.exp {
-		return Item{}, false
-	}
-
-	return item, true
 }
 
-// GetValue retrieves the value associated with the key.
-func (s *Store) GetValue(key string) (interface{}, bool) {
-	item, ok := s.GetItem(key)
-	if !ok {
-		return nil, false
-	}
+func (store *Store) Get(key string) (Item, bool) {
+	item, err := store.data[key]
 
-	return item.value, true
+	go launchHook(item, store.actionHooks.get)
+
+	return item, err
+}
+
+func (store *Store) Set(item Item) Item {
+	store.data[item.Key] = item
+
+	go launchHook(item, store.actionHooks.set)
+
+	return item
+}
+
+func (store *Store) Drop(key string) (Item, bool) {
+	item, exist := store.data[key]
+
+	if exist {
+		delete(store.data, key)
+
+		go launchHook(item, store.actionHooks.drop)
+
+		return item, true
+	}
+	return item, false
 }
