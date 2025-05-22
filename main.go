@@ -9,6 +9,8 @@ func main() {
 
 	storeInstance := store.NewStore()
 
+	store.InitIndexes(storeInstance)
+
 	store.LoadSnapshot(storeInstance, "./data")
 
 	store.StartCleaner(storeInstance, 15*time.Second)
@@ -28,6 +30,9 @@ func main() {
 		Value: map[string]interface{}{
 			"firstname": "john",
 			"lastname":  "doe",
+			"toto": map[string]interface{}{
+				"hihi": 111,
+			},
 		},
 		Exp: time.Now().Unix() + 20,
 	})
