@@ -7,23 +7,20 @@ import (
 
 func main() {
 
-	storeInstance := store.NewStore()
-
-	store.InitIndexes(storeInstance)
-
-	store.LoadSnapshot(storeInstance, "./data")
-
-	store.StartCleaner(storeInstance, 15*time.Second)
-
-	options := store.OptionAOF{
+	optionsAOF := store.OptionsAOF{
 		IntervalAnalyzeBuffer: 1 * time.Second,
 		IntervalSnapshot:      10 * time.Second,
 		QuantityBuffer:        10,
-		AofFolderPath:         "./buffer",
+		AOFFolderPath:         "./buffer",
 		SnapshotFolderPath:    "./data",
+		SplitChar:             "|\\|\\|",
 	}
 
-	store.InitAOF(storeInstance, options)
+	storeInstance := store.NewStore()
+
+	store.InitExpiration(storeInstance)
+	store.InitAOF(storeInstance, optionsAOF)
+	// store.InitIndexes(storeInstance)
 
 	storeInstance.Set(store.Item{
 		Key: "test",
@@ -33,20 +30,8 @@ func main() {
 			"toto": map[string]interface{}{
 				"hihi": 111,
 			},
+			"expireAt": time.Now().Unix() + 20,
 		},
-		Exp: time.Now().Unix() + 20,
-	})
-
-	storeInstance.Set(store.Item{
-		Key:   "test1",
-		Value: 1000,
-		Exp:   time.Now().Unix() + 1000,
-	})
-
-	storeInstance.Set(store.Item{
-		Key:   "test2",
-		Value: "test",
-		Exp:   time.Now().Unix() + 1000,
 	})
 
 	storeInstance.Drop("test1")

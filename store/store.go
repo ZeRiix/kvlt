@@ -3,7 +3,6 @@ package store
 type Item struct {
 	Value interface{}
 	Key   string
-	Exp   int64
 }
 
 type ActionHooks struct {
