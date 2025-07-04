@@ -2,6 +2,7 @@ package main
 
 import (
 	"kvlt/store"
+	"log"
 	"time"
 )
 
@@ -20,7 +21,7 @@ func main() {
 
 	store.InitExpiration(storeInstance)
 	store.InitAOF(storeInstance, optionsAOF)
-	// store.InitIndexes(storeInstance)
+	finder := store.InitIndexes(storeInstance)
 
 	storeInstance.Set(store.Item{
 		Key: "test",
@@ -28,11 +29,18 @@ func main() {
 			"firstname": "john",
 			"lastname":  "doe",
 			"toto": map[string]interface{}{
-				"hihi": 111,
+				"hihi": int64(111),
+				"test": map[string]interface{}{
+					"deep": "ok",
+				},
 			},
 			"expireAt": time.Now().Unix() + 20,
 		},
 	})
+
+	time.Sleep(1 * time.Millisecond)
+
+	log.Println("findItems: %#v\n", finder("toto.hihi", int64(111)))
 
 	storeInstance.Drop("test1")
 

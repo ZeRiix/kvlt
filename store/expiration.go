@@ -11,7 +11,7 @@ func InitExpiration(store *Store) {
 
 	store.actionHooks.set = append(
 		store.actionHooks.set,
-		func(item Item) {
+		func(item *Item) {
 			if expireAt, ok := findExpireAtProperty(item.Value); ok {
 				if expireAt <= time.Now().Unix() {
 					store.Drop(item.Key)
@@ -22,7 +22,7 @@ func InitExpiration(store *Store) {
 
 				expirationStore[expireAt] = append(
 					expirationStore[expireAt],
-					&item,
+					item,
 				)
 			}
 		},
@@ -30,7 +30,7 @@ func InitExpiration(store *Store) {
 
 	store.actionHooks.drop = append(
 		store.actionHooks.drop,
-		func(item Item) {
+		func(item *Item) {
 			if expireAt, ok := findExpireAtProperty(item.Value); ok {
 				if expirationStore[expireAt] == nil {
 					return

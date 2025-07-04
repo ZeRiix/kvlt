@@ -26,7 +26,7 @@ type Operation struct {
 	stringItem string
 }
 
-func initOperation(action Action, item Item) Operation {
+func initOperation(action Action, item *Item) Operation {
 	dataStringify, _ := json.Marshal(item)
 
 	return Operation{
@@ -69,7 +69,7 @@ func InitAOF(store *Store, options OptionsAOF) {
 
 	store.actionHooks.set = append(
 		store.actionHooks.set,
-		func(item Item) {
+		func(item *Item) {
 			operationsList[indexCurrentOperation] = append(
 				operationsList[indexCurrentOperation],
 				initOperation(SET, item),
@@ -79,7 +79,7 @@ func InitAOF(store *Store, options OptionsAOF) {
 
 	store.actionHooks.drop = append(
 		store.actionHooks.drop,
-		func(item Item) {
+		func(item *Item) {
 			operationsList[indexCurrentOperation] = append(
 				operationsList[indexCurrentOperation],
 				initOperation(DROP, item),
