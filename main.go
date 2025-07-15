@@ -4,6 +4,8 @@ import (
 	"kvlt/store"
 	"log"
 	"time"
+
+	"github.com/samber/lo"
 )
 
 func main() {
@@ -24,6 +26,13 @@ func main() {
 	finder := store.InitIndexes(storeInstance)
 
 	storeInstance.Set(store.Item{
+		Key:   "test2",
+		Value: int64(12),
+	})
+
+	storeInstance.Drop("test2")
+
+	storeInstance.Set(store.Item{
 		Key: "test",
 		Value: map[string]interface{}{
 			"firstname": "john",
@@ -40,7 +49,15 @@ func main() {
 
 	time.Sleep(1 * time.Millisecond)
 
-	log.Println("findItems: %#v\n", finder("toto.hihi", int64(111)))
+	result := lo.Map(
+		finder("toto.hihi", int64(111)),
+		func(item *store.Item, i int) store.Item {
+			val := *item
+			return val
+		},
+	)
+
+	log.Println("findItems: %#v\n", result)
 
 	storeInstance.Drop("test1")
 

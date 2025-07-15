@@ -118,7 +118,7 @@ func exportOperations(options OptionsAOF, operations []Operation) {
 		return
 	}
 
-	content := lo.Reduce(
+	content := lo.ReduceRight(
 		operations,
 		func(acc string, operation Operation, index int) string {
 			return acc + string(operation.action) + options.SplitChar + operation.key + options.SplitChar + operation.stringItem + "\n"
